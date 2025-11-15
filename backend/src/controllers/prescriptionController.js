@@ -22,9 +22,41 @@ export const createPrescription = async (req, res) => {
         },
       },
       include: {
-        patient: true,
-        doctor: true,
-        items: true,
+        patient: {
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true,
+                phone: true,
+              },
+            },
+          },
+        },
+        doctor: {
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+            department: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+              },
+            },
+          },
+        },
+        items: {
+          include: {
+            medicine: true,
+          },
+        },
       },
     });
 

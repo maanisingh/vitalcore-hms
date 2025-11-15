@@ -1261,6 +1261,7 @@ import { Button } from "../components/common/Button";
 import { DataTable } from "../components/common/DataTable";
 import { Modal } from "../components/common/Modal";
 import { PatientRegistrationForm } from "../components/forms/PatientRegistrationForm";
+import { getApiUrl } from "../config/api";
 
 const normalizePatientKeys = (p) => ({
   ...p,
@@ -1296,7 +1297,10 @@ export function Patients() {
   const fetchPatients = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/api/patients");
+      const token = localStorage.getItem("auth_token");
+      const res = await axios.get(getApiUrl("patients"), {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = res.data.map((p) => normalizePatientKeys(p));
       setPatients(data);
     } catch (err) {
@@ -1319,12 +1323,17 @@ export function Patients() {
   // ✅ Add / Update patient
   const handleRegisterSuccess = async (formData) => {
     try {
+      const token = localStorage.getItem("auth_token");
       if (selectedPatient) {
         // PUT (Update)
-        await axios.put(`http://localhost:5000/api/patients/${selectedPatient.id}`, formData);
+        await axios.put(getApiUrl(`patients/${selectedPatient.id}`), formData, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
       } else {
         // POST (Create)
-        await axios.post("http://localhost:5000/api/patients", formData);
+        await axios.post(getApiUrl("patients"), formData, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
       }
       await fetchPatients();
       setIsModalOpen(false);
@@ -1339,7 +1348,10 @@ export function Patients() {
     if (!window.confirm("Are you sure you want to delete this patient?")) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/patients/${id}`);
+      const token = localStorage.getItem("auth_token");
+      await axios.delete(getApiUrl(`patients/${id}`), {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setPatients((prev) => prev.filter((p) => p.id !== id));
     } catch (err) {
       console.error("Error deleting patient:", err);

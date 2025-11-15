@@ -9,6 +9,14 @@ import {
 
 const router = express.Router();
 
+// Radiology orders routes
+router.post("/orders", createRadiologyOrder);
+router.get("/orders", getAllRadiologyOrders);
+router.get("/orders/:id", getRadiologyOrderById);
+router.put("/orders/:id", updateRadiologyOrder);
+router.delete("/orders/:id", deleteRadiologyOrder);
+
+// Legacy routes (keep for backward compatibility)
 router.post("/", createRadiologyOrder);
 router.get("/", getAllRadiologyOrders);
 router.get("/:id", getRadiologyOrderById);

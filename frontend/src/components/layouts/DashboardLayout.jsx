@@ -92,7 +92,7 @@ import {
   UserCog,
   ClipboardList,
 } from "../../lib/icons";
-import { MapPin, RadioTower } from "lucide-react";
+import { MapPin, RadioTower, Shield, HelpCircle } from "lucide-react";
 
 const navItems = [
   {
@@ -122,11 +122,12 @@ const navItems = [
   { label: "Radiology", path: "/dashboard/radiology", icon: Activity, roles: ["ADMIN", "DOCTOR", "RADIOLOGIST"] },
   { label: "Billing", path: "/dashboard/billing", icon: DollarSign, roles: ["ADMIN", "RECEPTIONIST", "FINANCE"] },
   { label: "Staff", path: "/dashboard/staff", icon: UserCog, roles: ["ADMIN", "HR"] },
+  { label: "User Management", path: "/dashboard/users", icon: Shield, roles: ["ADMIN"] },
   { label: "Reports", path: "/dashboard/reports", icon: ClipboardList, roles: ["ADMIN", "FINANCE", "AUDITOR"] },
   { label: "Location Tracker", path: "/dashboard/locationtracker", icon: MapPin, roles: ["ADMIN", "HR" ," RECEPTIONIST"] },
   { label: "Beacon Manager", path: "/dashboard/beaconmanager", icon: RadioTower, roles: ["ADMIN", "HR" ," RECEPTIONIST"] },
   { label: "Staff Attendance", path: "/dashboard/Attendance", icon: Users, roles: ["ADMIN", "HR"] },
-
+  { label: "Help Center", path: "/dashboard/help", icon: HelpCircle, roles: ["ADMIN", "DOCTOR", "NURSE", "RECEPTIONIST", "PHARMACIST", "LAB_TECH", "RADIOLOGIST", "FINANCE", "HR", "PATIENT", "AUDITOR"] },
 
 ];{}
 

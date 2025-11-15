@@ -1,7 +1,37 @@
 import { PrismaClient } from "@prisma/client";
+import beaconTrackingService from "../services/beaconTrackingService.js";
+
 const prisma = new PrismaClient();
 
-// ✅ Add or Update User Location
+// ✅ Process beacon signal (enhanced for real-time tracking)
+export const processBeaconSignal = async (req, res) => {
+  try {
+    const { userId, beaconCode, rssi, timestamp } = req.body;
+
+    if (!userId || !beaconCode) {
+      return res.status(400).json({
+        message: "userId and beaconCode are required",
+      });
+    }
+
+    const location = await beaconTrackingService.processBeaconSignal({
+      userId,
+      beaconCode,
+      rssi: rssi || -60,
+      timestamp: timestamp ? new Date(timestamp) : new Date(),
+    });
+
+    res.status(200).json({
+      message: "Beacon signal processed successfully",
+      location,
+    });
+  } catch (error) {
+    console.error("Error processing beacon signal:", error);
+    res.status(500).json({ message: "Error processing beacon signal" });
+  }
+};
+
+// ✅ Add or Update User Location (legacy support)
 export const updateUserLocation = async (req, res) => {
   try {
     const { userId, beaconId } = req.body;
@@ -10,40 +40,12 @@ export const updateUserLocation = async (req, res) => {
       return res.status(400).json({ message: "userId and beaconId are required" });
     }
 
-    // Check if user already has a tracking record
-    const existing = await prisma.locationTracking.findUnique({
-      where: { userId: Number(userId) },
-    });
-
-    let tracking;
-
-    if (existing) {
-      // Update existing location
-      tracking = await prisma.locationTracking.update({
-        where: { userId: Number(userId) },
-        data: {
-          beaconId: Number(beaconId),
-          lastSeen: new Date(),
-          isActive: true,
-        },
-        include: {
-          user: true,
-          beacon: true,
-        },
-      });
-    } else {
-      // Create new location record
-      tracking = await prisma.locationTracking.create({
-        data: {
-          userId: Number(userId),
-          beaconId: Number(beaconId),
-        },
-        include: {
-          user: true,
-          beacon: true,
-        },
-      });
-    }
+    const tracking = await beaconTrackingService.updateUserLocation(
+      userId,
+      beaconId,
+      0,
+      new Date()
+    );
 
     res.status(200).json({
       message: "User location updated successfully",
@@ -58,35 +60,79 @@ export const updateUserLocation = async (req, res) => {
 // ✅ Get all active users' latest locations (for Admin dashboard)
 export const getAllActiveLocations = async (req, res) => {
   try {
-    const locations = await prisma.locationTracking.findMany({
-      where: { isActive: true },
-      include: {
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-          },
-        },
-        beacon: {
-          select: {
-            beaconCode: true,
-            zoneName: true,
-            building: true,
-            floor: true,
-          },
-        },
-      },
-    });
+    const { building, floor, role } = req.query;
+
+    const filters = {};
+    if (building) filters.building = building;
+    if (floor) filters.floor = floor;
+    if (role) filters.role = role;
+
+    const locations = await beaconTrackingService.getAllActiveLocations(filters);
 
     res.status(200).json({
       message: "All active user locations fetched successfully",
       locations,
+      total: locations.length,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error fetching locations", error });
+  }
+};
+
+// ✅ Get staff in a specific zone
+export const getStaffInZone = async (req, res) => {
+  try {
+    const { zoneName } = req.params;
+    const { building, floor } = req.query;
+
+    const staff = await beaconTrackingService.getStaffInZone(
+      zoneName,
+      building,
+      floor
+    );
+
+    res.status(200).json({
+      message: "Staff in zone fetched successfully",
+      staff,
+      total: staff.length,
+    });
+  } catch (error) {
+    console.error("Error fetching staff in zone:", error);
+    res.status(500).json({ message: "Error fetching staff in zone" });
+  }
+};
+
+// ✅ Find nearby staff members
+export const findNearbyStaff = async (req, res) => {
+  try {
+    const userId = req.user?.id || req.params.userId;
+
+    const nearbyStaff = await beaconTrackingService.findNearbyStaff(userId);
+
+    res.status(200).json({
+      message: "Nearby staff fetched successfully",
+      nearbyStaff,
+      total: nearbyStaff.length,
+    });
+  } catch (error) {
+    console.error("Error finding nearby staff:", error);
+    res.status(500).json({ message: "Error finding nearby staff" });
+  }
+};
+
+// ✅ Get building/floor summary
+export const getBuildingSummary = async (req, res) => {
+  try {
+    const summary = await beaconTrackingService.getBuildingSummary();
+
+    res.status(200).json({
+      message: "Building summary fetched successfully",
+      summary,
+    });
+  } catch (error) {
+    console.error("Error getting building summary:", error);
+    res.status(500).json({ message: "Error getting building summary" });
   }
 };
 

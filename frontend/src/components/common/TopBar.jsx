@@ -165,8 +165,16 @@ export function TopBar({ onToggleSidebar }) {
       </div>
     </div>
 
-    {/* RIGHT: Profile Icon */}
+    {/* RIGHT: Department Badge + Profile Icon */}
     <div className="flex items-center gap-3 sm:gap-4 relative">
+      {/* Department Badge (only show if user has department) */}
+      {user?.department && (
+        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+          <span className="text-sm font-medium text-blue-700">{user.department.name}</span>
+        </div>
+      )}
+
       <button
         className="hidden sm:block p-2 bg-hospital-purple/10 rounded-lg text-hospital-purple hover:bg-hospital-purple/20 transition"
         onClick={() => setShowProfile((p) => !p)}
@@ -177,12 +185,24 @@ export function TopBar({ onToggleSidebar }) {
       {/* ===== Profile Dropdown (For all devices) ===== */}
       {showProfile && (
         <div
-          className="absolute right-0 top-10 w-56 bg-white border border-gray-200 rounded-xl shadow-lg p-3 flex flex-col z-40"
+          className="absolute right-0 top-10 w-64 bg-white border border-gray-200 rounded-xl shadow-lg p-3 flex flex-col z-40"
           onMouseLeave={() => setShowProfile(false)}
         >
           <div className="px-3 py-2 border-b border-gray-200">
-            <p className="text-sm font-medium text-gray-900">{user?.email}</p>
-            <p className="text-xs text-gray-600">{user?.role}</p>
+            <p className="text-sm font-medium text-gray-900">
+              {user?.firstName} {user?.lastName}
+            </p>
+            <p className="text-xs text-gray-600">{user?.email}</p>
+            <div className="mt-2 flex items-center gap-2">
+              <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-medium rounded">
+                {user?.role}
+              </span>
+              {user?.department && (
+                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded">
+                  {user.department.name}
+                </span>
+              )}
+            </div>
           </div>
 
           <button

@@ -29,9 +29,14 @@ export const registerPatient = async (req, res) => {
     // ✅ Hash password before saving
     const hashedPassword = await bcrypt.hash(user.password, 10);
 
+    // ✅ Generate unique MRN (Medical Record Number)
+    const patientCount = await prisma.patient.count();
+    const mrn = `MRN${String(patientCount + 1).padStart(6, "0")}`;
+
     // ✅ Create patient and linked user
     const newPatient = await prisma.patient.create({
       data: {
+        mrn,
         fatherName,
         nationalId,
         bloodGroup, // Must match enum (e.g. A_POSITIVE)
@@ -78,15 +83,70 @@ export const registerPatient = async (req, res) => {
   }
 };
 
-// 🧩 Get all patients
+// 🧩 Get all patients (with RBAC filtering)
 export const getAllPatients = async (req, res) => {
   try {
+    const userRole = req.user?.role;
+    const userId = req.user?.id;
+    let whereClause = { deletedAt: null }; // Only active patients
+
+    // Apply role-based filtering
+    if (userRole === 'PATIENT') {
+      // Patients can only see themselves
+      const patient = await prisma.patient.findUnique({
+        where: { userId },
+      });
+      if (patient) {
+        whereClause.id = patient.id;
+      } else {
+        return res.json([]); // No patient record found
+      }
+    } else if (userRole === 'DOCTOR') {
+      // Doctors see patients in their department
+      const doctor = await prisma.doctor.findUnique({
+        where: { userId },
+        include: { department: true },
+      });
+      if (doctor && doctor.departmentId) {
+        // Get patients who have appointments in this department
+        const appointments = await prisma.appointment.findMany({
+          where: { departmentId: doctor.departmentId },
+          select: { patientId: true },
+          distinct: ['patientId'],
+        });
+        const patientIds = appointments.map(a => a.patientId);
+        whereClause.id = { in: patientIds };
+      } else {
+        return res.json([]);
+      }
+    } else if (userRole === 'NURSE') {
+      // Nurses see patients in their department
+      const nurse = await prisma.nurse.findUnique({
+        where: { userId },
+        include: { department: true },
+      });
+      if (nurse && nurse.departmentId) {
+        // Get patients who have appointments in this department
+        const appointments = await prisma.appointment.findMany({
+          where: { departmentId: nurse.departmentId },
+          select: { patientId: true },
+          distinct: ['patientId'],
+        });
+        const patientIds = appointments.map(a => a.patientId);
+        whereClause.id = { in: patientIds };
+      }
+    }
+    // ADMIN, HR, and other roles see all patients (no additional filter)
+
     const patients = await prisma.patient.findMany({
+      where: whereClause,
       include: { user: true },
       orderBy: { createdAt: "desc" },
     });
+
     res.json(patients);
   } catch (error) {
+    console.error("Error fetching patients:", error);
     res.status(500).json({ message: "Error fetching patients", error: error.message });
   }
 };

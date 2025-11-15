@@ -101,7 +101,8 @@ export function BeaconManager() {
   const fetchBeacons = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/api/beacon");
+      const apiUrl = import.meta.env.VITE_API_URL || "/api";
+      const res = await axios.get(`${apiUrl}/beacon`);
       setBeacons(res.data.beacons || []);
     } catch (err) {
       console.error("Error fetching beacons:", err);
@@ -112,10 +113,11 @@ export function BeaconManager() {
 
   const handleBeaconSave = async (formData) => {
     try {
+      const apiUrl = import.meta.env.VITE_API_URL || "/api";
       if (selectedBeacon) {
-        await axios.put(`http://localhost:5000/api/beacon/${selectedBeacon.id}`, formData);
+        await axios.put(`${apiUrl}/beacon/${selectedBeacon.id}`, formData);
       } else {
-        await axios.post("http://localhost:5000/api/beacon/", formData);
+        await axios.post(`${apiUrl}/beacon/`, formData);
       }
       setIsModalOpen(false);
       setSelectedBeacon(null);
@@ -128,7 +130,8 @@ export function BeaconManager() {
   const handleDeleteBeacon = async (id) => {
     if (!window.confirm("Are you sure you want to delete this beacon?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/beacon/${id}`);
+      const apiUrl = import.meta.env.VITE_API_URL || "/api";
+      await axios.delete(`${apiUrl}/beacon/${id}`);
       setBeacons((prev) => prev.filter((b) => b.id !== id));
     } catch (err) {
       console.error("Error deleting beacon:", err);

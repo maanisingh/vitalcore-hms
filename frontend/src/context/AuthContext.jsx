@@ -178,6 +178,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
+import { getApiUrl } from "../config/api";
 
 // ✅ User Roles
 const UserRoles = {
@@ -218,6 +219,14 @@ export function AuthProvider({ children }) {
   // ✅ Check for saved user (localStorage or Supabase)
   const checkUser = useCallback(async () => {
     try {
+      // First check for backend user data
+      const savedUserData = localStorage.getItem("user_data");
+      if (savedUserData) {
+        setUser(JSON.parse(savedUserData));
+        setLoading(false);
+        return;
+      }
+
       const savedDemoUser = localStorage.getItem("demo_user");
       if (savedDemoUser) {
         setUser(JSON.parse(savedDemoUser));
@@ -274,6 +283,42 @@ export function AuthProvider({ children }) {
     }
 
     try {
+      // Try backend API login first
+      const response = await fetch(getApiUrl("auth/login"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalizedEmail, password }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const newUser = {
+          id: data.user.id,
+          email: data.user.email,
+          role: data.user.role,
+          firstName: data.user.firstName,
+          lastName: data.user.lastName,
+          displayName: data.user.displayName,
+          phone: data.user.phone,
+          departmentId: data.user.departmentId,
+          department: data.user.doctor?.department || data.user.nurse?.department || data.user.pharmacist?.department || data.user.employee?.department,
+          doctor: data.user.doctor,
+          nurse: data.user.nurse,
+          pharmacist: data.user.pharmacist,
+          employee: data.user.employee,
+          patient: data.user.patient,
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        localStorage.setItem("auth_token", data.token);
+        localStorage.setItem("user_data", JSON.stringify(newUser));
+        setUser(newUser);
+        return;
+      }
+
+      // Fallback to Supabase
       const { data, error } = await supabase.auth.signInWithPassword({
         email: normalizedEmail,
         password,
@@ -309,6 +354,7 @@ export function AuthProvider({ children }) {
   async function logout() {
     try {
       localStorage.removeItem("demo_user");
+      localStorage.removeItem("user_data");
       localStorage.removeItem("auth_token");
 
       const { error } = await supabase.auth.signOut();

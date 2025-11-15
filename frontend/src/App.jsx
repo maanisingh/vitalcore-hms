@@ -41,6 +41,8 @@ const Reports = lazyImport(() => import("./pages/Reports"));
 const LocationTracker = lazyImport(() => import("./pages/LocationTracker"));
 const Attendance = lazyImport(() => import("./pages/Attendance"));
 const BeaconManager = lazyImport(() => import("./pages/BeaconManager"));
+const UserManagement = lazyImport(() => import("./pages/UserManagement"));
+const Help = lazyImport(() => import("./pages/Help"));
 
 
 /* ------------------ Loader ------------------ */
@@ -145,8 +147,9 @@ function App() {
                 { path: "reports", Component: Reports },
                 { path: "locationtracker", Component: LocationTracker },
                 { path: "beaconmanager", Component: BeaconManager },
+                { path: "users", Component: UserManagement },
+                { path: "help", Component: Help },
 
-                
               ].map(({ path, Component }) => (
                 <Route
                   key={path}

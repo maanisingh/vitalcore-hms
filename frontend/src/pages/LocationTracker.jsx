@@ -16,7 +16,8 @@ export function LocationTracker() {
   const fetchLocations = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/api/locationtracker");
+      const apiUrl = import.meta.env.VITE_API_URL || "/api";
+      const res = await axios.get(`${apiUrl}/locationtracker`);
       setLocations(res.data.locations || []);
     } catch (err) {
       console.error("Error fetching locations:", err);

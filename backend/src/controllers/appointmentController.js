@@ -28,12 +28,45 @@ export const createAppointment = async (req, res) => {
       },
       include: {
         patient: {
-          select: { id: true, fatherName: true, bloodGroup: true },
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true,
+                phone: true,
+                gender: true,
+                dateOfBirth: true,
+              },
+            },
+          },
         },
         doctor: {
-          select: { id: true, doctorCode: true, speciality: true },
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+            department: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+              },
+            },
+          },
         },
-        department: { select: { id: true, name: true } },
+        department: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+            type: true,
+          },
+        },
       },
     });
 
@@ -55,12 +88,45 @@ export const getAllAppointments = async (req, res) => {
       orderBy: { createdAt: "desc" },
       include: {
         patient: {
-          select: { id: true, fatherName: true, bloodGroup: true },
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true,
+                phone: true,
+                gender: true,
+                dateOfBirth: true,
+              },
+            },
+          },
         },
         doctor: {
-          select: { id: true, doctorCode: true, speciality: true },
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+            department: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+              },
+            },
+          },
         },
-        department: { select: { id: true, name: true } },
+        department: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+            type: true,
+          },
+        },
       },
     });
 
