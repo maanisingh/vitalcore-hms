@@ -8,7 +8,7 @@ import {
   getAllRadiologyTemplates,
   createRadiologyTemplate,
 } from "../controllers/radiologyRequestController.js";
-import { authenticate } from "../middlewares/authenticate.js";
+import { authenticate } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 

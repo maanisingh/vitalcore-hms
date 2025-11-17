@@ -12,7 +12,7 @@ services:
       MYSQL_USER: hms_user
       MYSQL_PASSWORD: hms_password
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
@@ -28,10 +28,10 @@ services:
     container_name: vitalcore_backend
     restart: always
     ports:
-      - "8100:8100"
+      - "8002:8002"
     environment:
       DATABASE_URL: mysql://hms_user:hms_password@mysql:3306/vitalcore_hms
-      PORT: 8100
+      PORT: 8002
       JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
       NODE_ENV: development
     depends_on:
@@ -50,9 +50,9 @@ services:
     container_name: vitalcore_frontend
     restart: always
     ports:
-      - "3000:3000"
+      - "3002:3000"
     environment:
-      VITE_API_URL: http://localhost:8100/api
+      VITE_API_URL: https://hms.alexandratechlab.com/api
     depends_on:
       - backend
     volumes:
