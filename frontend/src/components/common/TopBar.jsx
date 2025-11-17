@@ -185,8 +185,9 @@ export function TopBar({ onToggleSidebar }) {
       {/* ===== Profile Dropdown (For all devices) ===== */}
       {showProfile && (
         <div
-          className="absolute right-0 top-10 w-64 bg-white border border-gray-200 rounded-xl shadow-lg p-3 flex flex-col z-40"
+          className="absolute right-0 top-10 w-64 bg-white border border-gray-200 rounded-xl shadow-lg p-3 flex flex-col z-[9999]"
           onMouseLeave={() => setShowProfile(false)}
+          style={{ zIndex: 9999 }}
         >
           <div className="px-3 py-2 border-b border-gray-200">
             <p className="text-sm font-medium text-gray-900">
